@@ -4,7 +4,13 @@
 \alias{downloadGEO}
 \title{Download GEO data}
 \usage{
-downloadGEO(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir)
+downloadGEO(
+  GEOID,
+  platform,
+  protocol = c("affymetrix", "agilent"),
+  destDir,
+  greenOnly = TRUE
+)
 }
 \arguments{
 \item{GEOID}{The ID of the GEO dataset.}
@@ -14,6 +20,8 @@ downloadGEO(GEOID, platform, protocol = c("affymetrix", "agilent"), destDir)
 \item{protocol}{The protocol of the selected GEO dataset, including affymetrix and agilent.}
 
 \item{destDir}{A path to save downloaded data.}
+
+\item{greenOnly}{Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.}
 }
 \value{
 A SummarizedExperiment object including the processed data.
@@ -25,15 +33,9 @@ This function download and process data from GEO for microarray and RNASeq data.
 \donttest{
 library(RCPA)
 # Affymetrix
-downloadPath <- file.path(tempdir(), "GSE5281")
+downloadPath <- file.path(tempdir(), "GSE230534")
 if(!dir.exists(downloadPath)) dir.create(downloadPath)
-affyDataset <- RCPA::downloadGEO(GEOID = "GSE5281", platform ="GPL570",
+affyDataset <- RCPA::downloadGEO(GEOID = "GSE230534", platform ="GPL23126",
                                  protocol ="affymetrix", destDir = downloadPath)
-
-# Agilent
-downloadPath <- file.path(tempdir(), "GSE61196")
-if(!dir.exists(downloadPath)) dir.create(downloadPath)
-agilDataset <- RCPA::downloadGEO(GEOID = "GSE61196", platform ="GPL4133",
-                                 protocol ="agilent", destDir = downloadPath)
 }
 }

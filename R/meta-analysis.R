@@ -74,7 +74,7 @@
 #' agilFgseaResult <- loadData("agilFgseaResult")
 #' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
 #'
-#' metaPAResult <- RCPA::combineEnrichmentAnalysisResults(
+#' metaPAResult <- RCPA::runPathwayMetaAnalysis(
 #'     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
 #'     method = "stouffer"
 #' )
@@ -83,11 +83,13 @@
 #' @importFrom dplyr %>% bind_rows mutate group_by summarise filter group_split select inner_join
 #' @importFrom tidyr drop_na
 #' @export
-combineEnrichmentAnalysisResults <- function(PAResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
+runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
     method <- match.arg(method)
 
-    .requirePackage("meta")
+    if (!.requirePackage("meta")){
+        return(NULL)
+    }
 
     if (length(PAResults) == 1) {
         stop("Meta analysis is valid for two or more studies.")
@@ -205,7 +207,7 @@ combineEnrichmentAnalysisResults <- function(PAResults, method = c("stouffer", "
 #' agilDEExperiment <- loadData("agilDEExperiment")
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
-#' metaDEResult <- RCPA::combineDEAnalysisResults(list(
+#' metaDEResult <- RCPA::runDEMetaAnalysis(list(
 #'     rowData(affyDEExperiment),
 #'     rowData(agilDEExperiment),
 #'     rowData(RNASeqDEExperiment)
@@ -216,11 +218,13 @@ combineEnrichmentAnalysisResults <- function(PAResults, method = c("stouffer", "
 #' @importFrom tidyr drop_na
 #' @importFrom SummarizedExperiment rowData
 #' @export
-combineDEAnalysisResults <- function(DEResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
+runDEMetaAnalysis <- function(DEResults, method = c("stouffer", "fisher", "addCLT", "geoMean", "minP", "REML")) {
 
     method <- match.arg(method)
 
-    .requirePackage("meta")
+    if (!.requirePackage("meta")){
+        return(NULL)
+    }
 
     if (length(DEResults) == 1) {
         stop("Meta analysis is valid for two or more studies.")

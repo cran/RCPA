@@ -23,6 +23,11 @@ Plot a venndiagram from multiple pathway analysis results.
 \donttest{
 library(RCPA)
 
+#if (!require("ggvenn", quietly = TRUE)) {
+ #install.packages("ggvenn")
+#}
+#library(ggvenn)
+
 affyFgseaResult <- loadData("affyFgseaResult")
 agilFgseaResult <- loadData("agilFgseaResult")
 RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
@@ -38,12 +43,13 @@ PAResults <- list(
 PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
 PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
 
+if (require("ggvenn", quietly = TRUE)){
 RCPA::plotVennPathway(PAResults, pThreshold = 0.05) +
     ggplot2::ggtitle("All Significant Pathways")
 RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) +
     ggplot2::ggtitle("Significantly Up-regulated Pathways")
 RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) +
     ggplot2::ggtitle("Significantly Down-regulated Pathways")
-
+}
 }
 }

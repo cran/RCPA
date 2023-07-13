@@ -59,15 +59,23 @@ This function performs differential expression analysis using either limma, DESe
 library(RCPA)
 library(SummarizedExperiment)
 
+#if (!require("hgu133plus2.db", quietly = TRUE)) {
+ #BiocManager::install("hgu133plus2.db")
+#}
+#library(hgu133plus2.db)
+
 # GSE5281
 affyDataset <- loadData("affyDataset")
 affyDesign <- model.matrix(~0 + condition + region + condition:region, data = colData(affyDataset))
 colnames(affyDesign) <- make.names(colnames(affyDesign))
 affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=affyDesign)
 
+if (require("hgu133plus2.db", quietly = TRUE)){
 affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign,
                                         contrast = affyContrast, annotation = "GPL570")
-print(rowData(affyDEExperiment)) # check the DE analysis results
+}
+# print(rowData(affyDEExperiment)) # check the DE analysis results
+
 
 # GSE61196
 agilDataset <- loadData("agilDataset")
@@ -82,7 +90,7 @@ GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
 
 agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
                                         contrast = agilContrast, annotation = GPL4133GeneMapping)
-print(rowData(agilDEExperiment))
+# print(rowData(agilDEExperiment))
 
 # GSE153873
 RNASeqDataset <- loadData("RNASeqDataset")
@@ -90,18 +98,22 @@ RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
 RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=RNASeqDesign)
 
 # Create mapping
-if (!require("org.Hs.eg.db", quietly = TRUE)) {
-    BiocManager::install("org.Hs.eg.db")
+# Install org.Hs.eg.db if not installed
+# if (!require("org.Hs.eg.db", quietly = TRUE)) {
+#     BiocManager::install("org.Hs.eg.db")
+# }
+
+if (require("org.Hs.eg.db", quietly = TRUE)){
+    ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset),
+                                            columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
+    colnames(ENSEMBLMapping) <- c("FROM", "TO")
+
+    RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset,
+                           method = "DESeq2",
+                           design = RNASeqDesign,
+                           contrast = RNASeqContrast,
+                           annotation = ENSEMBLMapping)
+    # print(rowData(RNASeqDEExperiment))
 }
-
-library(org.Hs.eg.db)
-ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset),
-                                        columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
-colnames(ENSEMBLMapping) <- c("FROM", "TO")
-
-RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset, method = "DESeq2", design = RNASeqDesign,
-                                          contrast = RNASeqContrast, annotation = ENSEMBLMapping)
-print(rowData(RNASeqDEExperiment))
-
 }
 }

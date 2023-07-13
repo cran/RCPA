@@ -33,15 +33,14 @@
 #' )
 #'
 #' plotObj <- RCPA::plotKEGGMap(DEResults, "hsa05010", stat = "logFC", pThreshold = 1, statLimit = 1)
-#' print(plotObj$plot)
-#' ggplot2::ggsave("KEGG-hsa05010.png", plotObj$plot,
-#'                width = plotObj$width, height = plotObj$height, units = "px")
+#' # print(plotObj$plot)
+#' # ggplot2::ggsave("KEGG-hsa05010.png", plotObj$plot,
+#' #               width = plotObj$width, height = plotObj$height, units = "px")
 #'
 #' }
 #' @importFrom stringr str_starts str_remove
 #' @importFrom dplyr %>% mutate inner_join
 #' @importFrom ggplot2 ggplot annotation_custom theme_void scale_x_continuous annotation_raster geom_rect scale_fill_gradient guide_colorbar annotate element_text margin
-#' @importFrom utils globalVariables
 #' @export
 plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = TRUE, pThreshold = 0.05, statLimit = 3) {
 
@@ -51,9 +50,15 @@ plotKEGGMap <- function(DEResults, KEGGPathwayID, statistic = "logFC", useFDR = 
         }
     }
 
-    .requirePackage("png")
-    .requirePackage("RCurl")
-    .requirePackage("XML")
+    if (!.requirePackage("png")){
+        return(NULL)
+    }
+    if (!.requirePackage("RCurl")){
+        return(NULL)
+    }
+    if (!.requirePackage("XML")){
+        return(NULL)
+    }
 
     if (str_starts(KEGGPathwayID, "path:")) {
         KEGGPathwayID <- str_remove(KEGGPathwayID, "path:")

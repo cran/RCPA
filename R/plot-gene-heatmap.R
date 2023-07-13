@@ -25,25 +25,32 @@
 #'     "RNASeq - GSE153873" = rowData(RNASeqDEExperiment)
 #' )
 #'
-#' metaDEResult <- RCPA::combineDEAnalysisResults(DEResults, method = "stouffer")
-#' metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
+#' # Install the meta package if not installed
+#' # if (!requireNamespace("meta", quietly = TRUE)) {
+#' #     install.packages("meta")
+#' # }
 #'
-#' alzheimerGenes <- genesets$genesets[["path:hsa05010"]]
-#' genesToPlot <- head(metaDEResult[metaDEResult$ID %in% alzheimerGenes, ], 50)$ID
+#' if (requireNamespace("meta", quietly = TRUE)) {
+#'     metaDEResult <- RCPA::runDEMetaAnalysis(DEResults, method = "stouffer")
+#'     metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
 #'
-#' genesAnnotation <- RCPA::getEntrezAnnotation(genesToPlot)
-#' labels <- genesAnnotation[genesToPlot, "Description"]
+#'     alzheimerGenes <- genesets$genesets[["path:hsa05010"]]
+#'     genesToPlot <- head(metaDEResult[metaDEResult$ID %in% alzheimerGenes, ], 50)$ID
 #'
-#' genesOrderByFC <- order(metaDEResult[match(genesToPlot, metaDEResult$ID), "logFC"])
-#' resultsToPlot <- c(DEResults, list(metaDEResult))
-#' names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
+#'     genesAnnotation <- RCPA::getEntrezAnnotation(genesToPlot)
+#'     labels <- genesAnnotation[genesToPlot, "Description"]
 #'
-#' RCPA::plotDEGeneHeatmap(
-#'     resultsToPlot,
-#'     genesToPlot[genesOrderByFC],
-#'     labels = labels[genesOrderByFC],
-#'     negLog10pValueLims = c(0, 5), logFCLims = c(-1, 1)
-#' )
+#'     genesOrderByFC <- order(metaDEResult[match(genesToPlot, metaDEResult$ID), "logFC"])
+#'     resultsToPlot <- c(DEResults, list(metaDEResult))
+#'     names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
+#'
+#'     RCPA::plotDEGeneHeatmap(
+#'         resultsToPlot,
+#'         genesToPlot[genesOrderByFC],
+#'         labels = labels[genesOrderByFC],
+#'         negLog10pValueLims = c(0, 5), logFCLims = c(-1, 1)
+#'     )
+#' }
 #'
 #' }
 #' @importFrom SummarizedExperiment rowData
@@ -130,7 +137,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
             high = "#B80F0A",
             na.value = "white",
             limits = negLog10pValueLims,
-            guide = guide_colorbar(title = "-log10 p-value")
+            guide = guide_colorbar(title = paste0("-log10", ifelse(useFDR, " pFDR", " p-value")))
         ) +
         theme_minimal() +
         coord_flip() +

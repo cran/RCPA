@@ -23,13 +23,11 @@
 #' )
 #' DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
 #' DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
-#'
-#' RCPA::plotVolcanoDE(rowData(affyDEExperiment), logFCThreshold = 0.5) +
-#'     ggplot2::ggtitle("Affymetrix - GSE5281")
-#' RCPA::plotVolcanoDE(rowData(agilDEExperiment), logFCThreshold = 0.5) +
-#'     ggplot2::ggtitle("Agilent - GSE61196")
-#' RCPA::plotVolcanoDE(rowData(RNASeqDEExperiment), logFCThreshold = 0.5) +
-#'     ggplot2::ggtitle("RNASeq - GSE153873")
+#' if (require("ggvenn", quietly = TRUE)){
+#' RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("All DE Genes")
+#' RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated DE Genes")
+#' RCPA::plotVennDE(DEResultDowns) + ggplot2::ggtitle("Down-regulated DE Genes")
+#' }
 #'
 #' }
 #' @importFrom ggplot2 scale_fill_gradient theme
@@ -74,7 +72,9 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
     }
 
-    .requirePackage("ggvenn")
+    if (!.requirePackage("ggvenn")){
+        return(NULL)
+    }
 
     ggvenn::ggvenn(plotDat,
            fill_color = c(
@@ -106,6 +106,11 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #' \donttest{
 #' library(RCPA)
 #'
+#' #if (!require("ggvenn", quietly = TRUE)) {
+#'  #install.packages("ggvenn")
+#' #}
+#' #library(ggvenn)
+#'
 #' affyFgseaResult <- loadData("affyFgseaResult")
 #' agilFgseaResult <- loadData("agilFgseaResult")
 #' RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
@@ -121,13 +126,14 @@ plotVennDE <- function(DEResults, pThreshold = 0.05, useFDR = TRUE, stat = "logF
 #' PAREsultUps <- lapply(PAResults, function(df) df[df$normalizedScore > 0,])
 #' PAREsultDowns <- lapply(PAResults, function(df) df[df$normalizedScore < 0,])
 #'
+#' if (require("ggvenn", quietly = TRUE)){
 #' RCPA::plotVennPathway(PAResults, pThreshold = 0.05) +
 #'     ggplot2::ggtitle("All Significant Pathways")
 #' RCPA::plotVennPathway(PAREsultUps, pThreshold = 0.05) +
 #'     ggplot2::ggtitle("Significantly Up-regulated Pathways")
 #' RCPA::plotVennPathway(PAREsultDowns, pThreshold = 0.05) +
 #'     ggplot2::ggtitle("Significantly Down-regulated Pathways")
-#'
+#'}
 #' }
 #' @importFrom ggplot2 scale_fill_gradient theme
 #' @importFrom dplyr %>% filter
@@ -167,7 +173,9 @@ plotVennPathway <- function(PAResults, pThreshold = 0.05, useFDR = TRUE) {
         names(plotDat) <- paste0("Dataset ", seq_along(plotDat))
     }
 
-    .requirePackage("ggvenn")
+    if (!.requirePackage("ggvenn")){
+        return(NULL)
+    }
 
     ggvenn::ggvenn(plotDat,
            fill_color = c(
