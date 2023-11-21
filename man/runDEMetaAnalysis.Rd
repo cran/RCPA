@@ -13,7 +13,7 @@ runDEMetaAnalysis(
 \item{DEResults}{A list of dataframes containing DE analysis results.
 Each dataframe must have ID, p.value, logFC and logFCSE columns.}
 
-\item{method}{The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP".}
+\item{method}{The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP", or "REML".}
 }
 \value{
 A dataframe containing combined DE analysis results.
@@ -31,9 +31,10 @@ agilDEExperiment <- loadData("agilDEExperiment")
 RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 
 metaDEResult <- RCPA::runDEMetaAnalysis(list(
-    rowData(affyDEExperiment),
-    rowData(agilDEExperiment),
-    rowData(RNASeqDEExperiment)
+    rowData(affyDEExperiment)[1:1000,],
+    rowData(agilDEExperiment)[1:1000,],
+    rowData(RNASeqDEExperiment)[1:1000,]
 ), method = "stouffer")
+
 }
 }

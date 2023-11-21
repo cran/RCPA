@@ -2,13 +2,14 @@
 % Please edit documentation in R/plot-forest.R
 \name{plotForest}
 \alias{plotForest}
-\title{Plot forest plot from pathway/geneset/meta analysis results}
+\title{Plot pathway forest plot from pathway/geneset/meta analysis results}
 \usage{
 plotForest(
   resultsList,
   yAxis = c("ID", "name"),
   statLims = c(-2.5, 2.5),
-  useFDR = TRUE
+  useFDR = TRUE,
+  selectedPathways = NULL
 )
 }
 \arguments{
@@ -17,20 +18,22 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 
 \item{yAxis}{The column to use for the y-axis.}
 
-\item{statLims}{A vector of length 2 specifying the limits for score to use in the x axis.}
+\item{statLims}{A numeric vector of length 2 specifying the limits for score to use in the x-axis.}
 
-\item{useFDR}{A boolean parameter to specify if adjusted p-value should be considered.}
+\item{useFDR}{Logical to indicate whether to use FDR or p-value.}
+
+\item{selectedPathways}{A vector of pathways ID, which is in the same format as ID column in the pathway analysis result, to be included in the plot.
+If it is NULL, all pathways will be included.}
 }
 \value{
-A list of ggplot objects.
+A ggplot2 object for presenting the heatmap of the pathways.
 }
 \description{
-Plot forest plot from pathway/geneset/meta analysis results.
+pathways heatmap plot from pathway/geneset/meta analysis results.
 }
 \examples{
 \donttest{
 library(RCPA)
-
 affyFgseaResult <- loadData("affyFgseaResult")
 agilFgseaResult <- loadData("agilFgseaResult")
 RNASeqFgseaResult <- loadData("RNASeqFgseaResult")
@@ -50,7 +53,7 @@ selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:h
                       "path:hsa04722")
 resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
 
-RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
+plotObj <- RCPA::plotForest(resultsToPlot, yAxis = "name", statLims = c(-3.5, 3.5))
 
 }
 }

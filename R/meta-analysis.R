@@ -1,5 +1,5 @@
-#' @title Combine P-Valuse using Fisher
-#' @description This function combines P-Values based on Fisher method.
+#' @title Combine p-values using Fisher's
+#' @description This function combines p-values based on Fisher's method.
 #' This function is used internally by .combinePvalues.
 #' @param pvals The vector of P-Values to be combined.
 #' @return A combined P-Value
@@ -12,10 +12,10 @@
     return(p.value)
 }
 
-#' @title Combine P-Valuse using Stouffer
-#' @description This function combines P-Values based on Stouffer method.
+#' @title Combine p-values using Stouffer's
+#' @description This function combines p-values based on Stouffer's method.
 #' This function is used internally by .combinePvalues.
-#' @param pvals The vector of P-Values to be combined.
+#' @param pvals The vector of p-values to be combined.
 #' @return A combined P-Value
 #' @details This function is used internally by .combinePvalues.
 #' @importFrom stats pnorm qnorm
@@ -26,8 +26,8 @@
     return(p.value)
 }
 
-#' @title Combine P-Valuse using addCLT
-#' @description This function combines P-Values based on addCLT method.
+#' @title Combine p-values using addCLT
+#' @description This function combines p-values based on addCLT method.
 #' This function is used internally by .combinePvalues.
 #' @param pvals The vector of P-Values to be combined.
 #' @return A combined P-Value
@@ -48,7 +48,7 @@
     return(p.value)
 }
 
-#' @title Combine P-Valuse using Geometric Mean
+#' @title Combine p-values using Geometric Mean
 #' @description This function combines P-Values by computing their geometric mean.
 #' This function is used internally by .combinePvalues.
 #' @param pvals The vector of P-Values to be combined.
@@ -63,9 +63,18 @@
 
 #' @title Perform Meta Analysis
 #' @description This function performs meta analysis on multiple pathway analysis results.
-#' @param PAResults A list of data frames obtained from runPathwayAnalysis.
-#' @param method A method used to combine pathway analysis results
-#' @return A dataframe of meta analysis results including combined normalized score and combined p-value for each pathway.
+#' @param PAResults A list of at least size two of data frames obtained from pathway analysis
+#' @param method A method used to combine pathway analysis results, which can be "stouffer", "fisher", "addCLT", "geoMean", "minP", or "REML"
+#' @return A dataframe of meta analysis results including the following columns:
+#' \itemize{
+#' \item{ID: The ID of pathway}
+#' \item{name: The name of pathway}
+#' \item{p.value: The meta p-value of pathway}
+#' \item{pFDR: The adjusted meta p-value of pathway using Benjamini-Hochberg method}
+#' \item{score: The combined score of pathway}
+#' \item{normalizedScore: The combined normalized score of pathway}
+#' \item{pathwaySize: The size of pathway}
+#' }
 #' @examples
 #' \donttest{
 #'
@@ -79,7 +88,7 @@
 #'     method = "stouffer"
 #' )
 #' }
-#' @details This function performs mata analysis on multiple pathway analysis results.
+#' @details This function performs meta-analysis on multiple pathway analysis results.
 #' @importFrom dplyr %>% bind_rows mutate group_by summarise filter group_split select inner_join
 #' @importFrom tidyr drop_na
 #' @export
@@ -188,7 +197,14 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 
     metaResult$name <- PAResults[[1]][match(metaResult$ID, PAResults[[1]]$ID), "name"]
     metaResult$pathwaySize <- PAResults[[1]][match(metaResult$ID, PAResults[[1]]$ID), "pathwaySize"]
+    
+    metaResult <- metaResult[order(metaResult$p.value),]
+    
+    rownames(metaResult) <- NULL
+    
     metaResult[, c("ID", "name", "p.value", "pFDR", "score", "normalizedScore", "pathwaySize")]
+    
+    
 }
 
 
@@ -196,7 +212,7 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 #' @description This function performs mata analysis on multiple DE analysis results.
 #' @param DEResults A list of dataframes containing DE analysis results.
 #' Each dataframe must have ID, p.value, logFC and logFCSE columns.
-#' @param method The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP".
+#' @param method The method to combine p-values. It can be one of "fisher", "stouffer", "geoMean", "addCLT", "minP", or "REML".
 #' @return A dataframe containing combined DE analysis results.
 #' The dataframe has ID, p.value, pDFR, logFC, and logFCSE columns.
 #' @examples
@@ -208,10 +224,11 @@ runPathwayMetaAnalysis <- function(PAResults, method = c("stouffer", "fisher", "
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
 #'
 #' metaDEResult <- RCPA::runDEMetaAnalysis(list(
-#'     rowData(affyDEExperiment),
-#'     rowData(agilDEExperiment),
-#'     rowData(RNASeqDEExperiment)
+#'     rowData(affyDEExperiment)[1:1000,],
+#'     rowData(agilDEExperiment)[1:1000,],
+#'     rowData(RNASeqDEExperiment)[1:1000,]
 #' ), method = "stouffer")
+#' 
 #' }
 #' @importFrom dplyr %>% bind_rows group_by summarize mutate
 #' @importFrom stats p.adjust
@@ -325,6 +342,8 @@ runDEMetaAnalysis <- function(DEResults, method = c("stouffer", "fisher", "addCL
             ) %>%
             select("ID", "p.value", "pFDR", "logFC", "logFCSE")
     }
-
+    
+    metaResult <- metaResult[order(metaResult$p.value),]
+    rownames(metaResult) <- NULL
     return(metaResult)
 }

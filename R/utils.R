@@ -14,14 +14,14 @@
         if (rlang::is_interactive()){
             BiocManager::install(pkg, update = FALSE, ask = TRUE)
             if (pkg %in% .packages(all.available = TRUE)) {
-                cat("Package", pkg, "is installed.\n")
+                message("Package ", pkg, " is installed.")
             } else {
-                cat("Package", pkg, "is not installed. Please install it first.\n")
+                warning("Package ", pkg, " is not installed. Please install it first.\n")
                 pkgEnv$isMissingDependency <- TRUE
                 return(FALSE)
             }
         } else {
-            cat("Package", pkg, "is not installed. Please install it first.\n")
+            warning("Package ", pkg, " is not installed. Please install it first.\n")
             pkgEnv$isMissingDependency <- TRUE
             return(FALSE)
         }
@@ -90,12 +90,17 @@
 #' @param name The name of the data.
 #' @return Load the data with the specified name.
 #' @examples
-#' \donttest{
+#' 
 #' library(RCPA)
 #' RNASeqDataset <- loadData("RNASeqDataset")
-#' }
+#' 
 #' @export
 loadData <- function(name){
+      
+     oldTimeout <- options("timeout")
+     on.exit({options(timeout = oldTimeout)})
+     options(timeout = 3600)
+     
      data <- load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/.data/", name, ".rda"))))
      get(data)
 }

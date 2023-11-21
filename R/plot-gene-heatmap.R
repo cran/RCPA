@@ -17,6 +17,7 @@
 #' affyDEExperiment <- loadData("affyDEExperiment")
 #' agilDEExperiment <- loadData("agilDEExperiment")
 #' RNASeqDEExperiment <- loadData("RNASeqDEExperiment")
+#' metaDEResult <- loadData("metaDEResult")
 #' genesets <- loadData("genesets")
 #'
 #' DEResults <- list(
@@ -24,33 +25,26 @@
 #'     "Agilent - GSE61196" = rowData(agilDEExperiment),
 #'     "RNASeq - GSE153873" = rowData(RNASeqDEExperiment)
 #' )
+#' 
+#'  metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
 #'
-#' # Install the meta package if not installed
-#' # if (!requireNamespace("meta", quietly = TRUE)) {
-#' #     install.packages("meta")
-#' # }
+#'  alzheimerGenes <- genesets$genesets[["path:hsa05010"]]
+#'  genesToPlot <- head(metaDEResult[metaDEResult$ID %in% alzheimerGenes, ], 50)$ID
 #'
-#' if (requireNamespace("meta", quietly = TRUE)) {
-#'     metaDEResult <- RCPA::runDEMetaAnalysis(DEResults, method = "stouffer")
-#'     metaDEResult <- metaDEResult[order(metaDEResult$pFDR),]
+#'  genesAnnotation <- RCPA::getEntrezAnnotation(genesToPlot)
+#'  labels <- genesAnnotation[genesToPlot, "Description"]
 #'
-#'     alzheimerGenes <- genesets$genesets[["path:hsa05010"]]
-#'     genesToPlot <- head(metaDEResult[metaDEResult$ID %in% alzheimerGenes, ], 50)$ID
+#'  genesOrderByFC <- order(metaDEResult[match(genesToPlot, metaDEResult$ID), "logFC"])
+#'  resultsToPlot <- c(DEResults, list(metaDEResult))
+#'  names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
 #'
-#'     genesAnnotation <- RCPA::getEntrezAnnotation(genesToPlot)
-#'     labels <- genesAnnotation[genesToPlot, "Description"]
+#'  plotObj <- RCPA::plotDEGeneHeatmap(
+#'      resultsToPlot,
+#'      genesToPlot[genesOrderByFC],
+#'      labels = labels[genesOrderByFC],
+#'      negLog10pValueLims = c(0, 5), logFCLims = c(-1, 1)
+#'  )
 #'
-#'     genesOrderByFC <- order(metaDEResult[match(genesToPlot, metaDEResult$ID), "logFC"])
-#'     resultsToPlot <- c(DEResults, list(metaDEResult))
-#'     names(resultsToPlot) <- c(names(DEResults), "Meta-analysis")
-#'
-#'     RCPA::plotDEGeneHeatmap(
-#'         resultsToPlot,
-#'         genesToPlot[genesOrderByFC],
-#'         labels = labels[genesOrderByFC],
-#'         negLog10pValueLims = c(0, 5), logFCLims = c(-1, 1)
-#'     )
-#' }
 #'
 #' }
 #' @importFrom SummarizedExperiment rowData
@@ -105,7 +99,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
                     label = factor(labels, levels = labels),
                     dataset = n
                 ) %>%
-                select("label", "logFC", "p.value", "dataset")
+                dplyr::select("label", "logFC", "p.value", "dataset")
         }) %>%
         do.call(what = rbind) %>%
         gather("type", "value", -"label", -"dataset") %>%
@@ -113,12 +107,13 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
             label = factor(.data$label, levels = labels),
             dataset = factor(.data$dataset, levels = names(DEdfs)),
             type = factor(.data$type, levels = c("p.value", "logFC")),
-            colOrder = as.numeric(.data$dataset)*2 + as.numeric(.data$type) + as.numeric(.data$dataset)*0.1 + as.numeric(.data$type)*0.01
+            # colOrder = as.numeric(.data$dataset)*2 + as.numeric(.data$type) + as.numeric(.data$dataset)*0.1 + as.numeric(.data$type)*0.01
+            colOrder = as.numeric(.data$dataset) + as.numeric(.data$type)*length(DEdfs) + as.numeric(.data$dataset)*0.01 + as.numeric(.data$type)*0.1
         )
 
     uniqueY <- sort(unique(plotData$colOrder))
 
-    ggplot() +
+    x <- ggplot() +
         geom_tile(data = plotData[plotData$type == "logFC",], aes(x = .data$label, y = .data$colOrder, fill = .data$value, width = 1, height = 1)) +
         scale_fill_gradient2(
             high = "#B80F0A",
@@ -144,6 +139,7 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
         theme(
             axis.title.y = element_blank(),
             axis.title.x = element_blank(),
+            axis.text.x.bottom = element_text(angle = 45, vjust = 1, hjust = 1),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank()
         ) +
@@ -152,11 +148,26 @@ plotDEGeneHeatmap <- function(DEResults, genes, useFDR = TRUE, labels = NULL, lo
         ) +
         scale_y_continuous(
             breaks = uniqueY,
-            labels = rep(c(
-                paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
-                "log2 FC"
-            ), length(DEdfs)),
+            # labels = rep(c(
+            #     paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+            #     "log2 FC"
+            # ), length(DEdfs)),
+            labels = rep(names(DEdfs), 2),
             expand = c(0, 0),
-            sec.axis = sec_axis(~., breaks = sapply(seq_along(DEdfs), function(i) mean(uniqueY[(i-1)*2 + 1:2])), labels = names(DEdfs))
+            # sec.axis = sec_axis(~., breaks = sapply(seq_along(DEdfs), function(i) mean(uniqueY[(i-1)*2 + 1:2])), labels = names(DEdfs))
+            # sec.axis = sec_axis(~., breaks = sapply(seq_along(c(
+            #       paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+            #       "log2 FC"
+            #   )), function(i) mean(uniqueY[(i-1)*4 + 1:4])), labels = c(
+            #     paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+            #     "log2 FC"
+            #   ))
+            sec.axis = sec_axis(~., breaks = sapply(seq_along(c(
+              paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+              "log2 FC"
+            )), function(i) mean(uniqueY[(i-1)*length(DEdfs) + 1:length(DEdfs)])), labels = c(
+              paste0("-log10", ifelse(useFDR, " pFDR", " p-value")),
+              "log2 FC"
+            ))
         )
 }

@@ -93,48 +93,83 @@
 #' @param taxid The NCBI taxonomy ID of the organism.
 #' @param namespace The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
 #' @return A named list with three elements: database, genesets and names.
-#' @importFrom utils read.table
+#' @importFrom utils read.table download.file
 #' @importFrom dplyr %>% filter group_by group_split rename select
 #' @importFrom stats setNames
 #' @noRd
 .getGOTerms <- function(taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component")) {
 
     namespace <- match.arg(namespace)
-
-    con <- gzcon(url("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz"))
-    txt <- readLines(con)
-    close(con)
-
+    
+    tmpTarget <- tempfile(fileext = ".gz")
+    on.exit({
+      unlink(tmpTarget)
+    })
+    
+    oldTimeout <- options("timeout")
+    on.exit({options(timeout = oldTimeout)})
+    options(timeout = 3600)
+    download.file("https://ftp.ncbi.nih.gov/gene/DATA/gene2go.gz", tmpTarget)
+    
     cat <- switch(namespace,
                   biological_process = "Process",
                   molecular_function = "Function",
                   cellular_component = "Component")
-
-    genesets <- read.table(textConnection(txt), sep = "\t", header = TRUE, stringsAsFactors = FALSE, fill = TRUE, comment.char = "!") %>%
+    
+    gzCon <- gzfile(tmpTarget, open = "r")
+    on.exit({
+      close(gzCon)
+    })
+    headers <- readLines(gzCon, 1) %>%
+      stringr::str_split("\t") %>%
+      unlist() %>%
+      make.names()
+    
+    genesets <- list()
+    
+    while (TRUE) {
+      lines <- readLines(gzCon, 100000)
+      
+      if (length(lines) == 0) {
+        break
+      }
+      
+      genesetsTmp <- read.table(textConnection(lines), sep = "\t", header = FALSE, stringsAsFactors = FALSE, fill = TRUE, comment.char = "!", quote = "") %>%
+        `colnames<-`(headers) %>%
         rename(tax_id = "X.tax_id") %>%
         filter(.$tax_id == taxid & .$Category == cat) %>%
         group_by(.$GO_ID) %>%
         group_split() %>%
         lapply(function(df) {
-            list(
-                name = df$GO_ID[1] %>% as.character(),
-                geneIds = df$GeneID %>% as.character()
-            )
+          list(
+            name = df$GO_ID[1] %>% as.character(),
+            geneIds = df$GeneID %>% as.character()
+          )
         }) %>%
         setNames(lapply(., function(gl) gl$name)) %>%
         lapply(function(gl) gl$geneIds)
-
-    if (length(genesets) == 0) {
-        stop("No GO terms found for the given organism and namespace.")
+      
+      for (gsId in names(genesetsTmp)) {
+        if (is.null(genesets[[gsId]])) {
+          genesets[[gsId]] <- genesetsTmp[[gsId]]
+        } else {
+          genesets[[gsId]] <- union(genesets[[gsId]], genesetsTmp[[gsId]])
+        }
+      }
     }
-
-     goTermNames <- .getGOTermNames(namespace)
-
+    
+    if (length(genesets) == 0) {
+      stop("No GO terms found for the given organism and namespace.")
+    }
+    
+    goTermNames <- .getGOTermNames(namespace)
+    
     list(
-        database = "GO",
-        genesets = genesets,
-        names = goTermNames[names(genesets)]
+      database = "GO",
+      genesets = genesets,
+      names = goTermNames[names(genesets)]
     )
+
 }
 
 #' @title Get gene sets
@@ -148,27 +183,46 @@
 #' @param namespace The namespace of the GO terms. E.g, biological_process, molecular_function, cellular_component.
 #' @param minSize The minimum size of the gene sets.
 #' @param maxSize The maximum size of the gene sets.
-#' This parameter is only used when database is GO.
+#' @param useCache A boolean parameter specifying if using pre-saved downloaded geneset database. It is FALSE by default.
 #' @return A named list with three elements: database, genesets and names.
 #' @examples
 #' \donttest{
 #'
 #' library(RCPA)
 #'
-#' getGeneSets("KEGG", org = "hsa", minSize = 10, maxSize = 1000)
-#' getGeneSets("GO", taxid = 9606, namespace = "biological_process", minSize = 10, maxSize = 1000)
+#' KEGGgenesets <- getGeneSets("KEGG", org = "hsa", 
+#'                               minSize = 10, maxSize = 1000, useCache = TRUE)
+#' 
+#' GOterms <- getGeneSets("GO", taxid = 9606, 
+#'                         namespace = "biological_process", 
+#'                         minSize = 10, maxSize = 1000, useCache = TRUE)
 #'
 #' }
 #' @export
-getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 10, maxSize = 1000) {
+getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, namespace = c("biological_process", "molecular_function", "cellular_component"), minSize = 1, maxSize = 1000, useCache = FALSE) {
     database <- match.arg(database)
 
     if (database == "KEGG") {
         if (is.null(org)) {
             stop("Organism must be specified")
         }
+      
+        if (useCache) {
+          oldTimeout <- options("timeout")
+          on.exit({options(timeout = oldTimeout)})
+          options(timeout = 3600)
+          name <- paste0(database, "_", org)
+          data <- try({load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/genesets/", name, ".rda"))))}, silent = TRUE)
+          if (inherits(data, "try-error")) {
+            gs <- .getKEGGGeneSets(org)
+          } else {
+            gs <- get(data)
+          }
+        } else {
+          gs <- .getKEGGGeneSets(org)
+        }
 
-        gs <- .getKEGGGeneSets(org)
+        # gs <- .getKEGGGeneSets(org)
     } else if (database == "GO") {
 
         if (is.null(taxid)) {
@@ -176,8 +230,23 @@ getGeneSets <- function(database = c("KEGG", "GO"), org = "hsa", taxid = 9606, n
         }
 
         namespace <- match.arg(namespace)
+        
+        if (useCache) {
+          oldTimeout <- options("timeout")
+          on.exit({options(timeout = oldTimeout)})
+          options(timeout = 3600)
+          name <- paste0(database, "_", taxid, "_", namespace)
+          data <- try({load(gzcon(url(paste0("https://raw.githubusercontent.com/tinnlab/RCPA/main/genesets/", name, ".rda"))))}, silent = TRUE)
+          if (inherits(data, "try-error")) {
+            gs <- .getGOTerms(taxid, namespace)
+          } else {
+            gs <- get(data)
+          }
+        } else {
+          gs <- .getGOTerms(taxid, namespace)
+        }
 
-        gs <- .getGOTerms(taxid, namespace)
+        # gs <- .getGOTerms(taxid, namespace)
     } else {
         stop("Database not supported")
     }

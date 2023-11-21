@@ -24,7 +24,11 @@ downloadGEO(
 \item{greenOnly}{Logical, for use with source, should the green (Cy3) channel only be read, or are both red and green required.}
 }
 \value{
-A SummarizedExperiment object including the processed data.
+A SummarizedExperiment object including the following attributes:
+\itemize{
+\item{assay: The assay data matrix, where rows are genes and columns are samples}
+\item{colData: The data frame of sample information}
+}
 }
 \description{
 This function download and process data from GEO for microarray and RNASeq data.
@@ -33,9 +37,9 @@ This function download and process data from GEO for microarray and RNASeq data.
 \donttest{
 library(RCPA)
 # Affymetrix
-downloadPath <- file.path(tempdir(), "GSE230534")
+downloadPath <- file.path(tempdir(), "GSE59761")
 if(!dir.exists(downloadPath)) dir.create(downloadPath)
-affyDataset <- RCPA::downloadGEO(GEOID = "GSE230534", platform ="GPL23126",
+affyDataset <- RCPA::downloadGEO(GEOID = "GSE59761", platform ="GPL16311",
                                  protocol ="affymetrix", destDir = downloadPath)
 }
 }

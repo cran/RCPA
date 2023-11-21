@@ -35,7 +35,14 @@ NULL means all input dataframes share a common space.
 So the union pathways of all input dataframes is taken into account.}
 }
 \value{
-A dataframe of consensus analysis result
+A dataframe of consensus analysis result, which contains the following columns:
+\itemize{
+\item{ID: The ID of pathway}
+\item{p.value: The p-value of pathway}
+\item{pFDR: The adjusted p-value using Benjamini-Hochberg method}
+\item{name: The name of pathway}
+\item{pathwaySize: The size of pathway}
+}
 }
 \description{
 This function performs consensus analysis using two methods.
@@ -54,6 +61,8 @@ consensusPAResult <- RCPA::runConsensusAnalysis(
     list(affyFgseaResult, agilFgseaResult, RNASeqFgseaResult),
     method = "weightedZMean"
 )
+
+print(head(consensusPAResult))
 
 }
 }

@@ -11,7 +11,8 @@ plotBarChart(
   by = c("normalizedScore", "score", "pFDR", "p.value"),
   maxNegLog10PValue = 5,
   pThreshold = 0.05,
-  useFDR = TRUE
+  useFDR = TRUE,
+  selectedPathways = NULL
 )
 }
 \arguments{
@@ -32,6 +33,9 @@ Otherwise, the pathway will be sorted by the average value of the 'by' parameter
 
 \item{useFDR}{If TRUE, use FDR adjusted p-values for the significance threshold. Otherwise, use raw p-values.
 This parameter is used to mark the color of the bars and is independent of the 'by' parameter.}
+
+\item{selectedPathways}{A vector of pathways ID, which is in the same format as ID column in the pathway analysis result, to be included in the plot.
+If it is NULL, all pathways will be included.}
 }
 \value{
 A ggplot2 object.
@@ -55,14 +59,17 @@ PAResults <- list(
     "Meta-analysis" = metaPAResult
 )
 
-selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:hsa05016",
-                      "path:hsa05017", "path:hsa05020", "path:hsa05022", "path:hsa04724",
-                      "path:hsa04727", "path:hsa04725", "path:hsa04728", "path:hsa04726",
-                      "path:hsa04720", "path:hsa04730", "path:hsa04723", "path:hsa04721",
-                      "path:hsa04722")
-resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
+selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", 
+                       "path:hsa05016", "path:hsa05017", "path:hsa05020", 
+                       "path:hsa05022", "path:hsa04724", "path:hsa04727", 
+                       "path:hsa04725", "path:hsa04728", "path:hsa04726",
+                      "path:hsa04720", "path:hsa04730", "path:hsa04723", 
+                      "path:hsa04721", "path:hsa04722")
+resultsToPlot <- lapply(PAResults, 
+                    function(df) df[df$ID \%in\% selectedPathways,])
 
-RCPA::plotBarChart(resultsToPlot) + ggplot2::ggtitle("FGSEA Analysis Results")
+plotObj <- RCPA::plotBarChart(resultsToPlot) + 
+            ggplot2::ggtitle("FGSEA Analysis Results")
 
 }
 }

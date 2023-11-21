@@ -2,14 +2,15 @@
 % Please edit documentation in R/plot-venn.R
 \name{plotVennDE}
 \alias{plotVennDE}
-\title{Plot venndiagram from multiple DE Analysis results}
+\title{Plot Venn diagram from multiple DE Analysis results}
 \usage{
 plotVennDE(
   DEResults,
   pThreshold = 0.05,
   useFDR = TRUE,
   stat = "logFC",
-  statThreshold = 0
+  statThreshold = 0,
+  topToList = 10
 )
 }
 \arguments{
@@ -19,16 +20,18 @@ plotVennDE(
 
 \item{useFDR}{Use the FDR adjusted p-value instead of the raw p-value.}
 
-\item{stat}{The additional statistis column to use for filtering differentially expressed genes.}
+\item{stat}{The additional statistics column to use for filtering differentially expressed genes.}
 
 \item{statThreshold}{The absolute value of the statistic threshold to use for filtering differentially expressed genes.
 Default is 0, which means no filtering.}
+
+\item{topToList}{The number of common DE genes that are used to annotate the plot}
 }
 \value{
 A ggplot2 object.
 }
 \description{
-Plot a venndiagram from multiple DE Analysis results.
+Plot a Venn diagram from multiple DE Analysis results.
 }
 \examples{
 \donttest{
@@ -44,12 +47,18 @@ DEResults <- list(
     "Agilent - GSE61196"   = rowData(agilDEExperiment),
     "RNASeq - GSE153873"   = rowData(RNASeqDEExperiment)
 )
+
 DEResultUps <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC > 0, ])
+
 DEResultDowns <- lapply(DEResults, function(df) df[!is.na(df$logFC) & df$logFC < 0, ])
+
 if (require("ggvenn", quietly = TRUE)){
-RCPA::plotVennDE(DEResults) + ggplot2::ggtitle("All DE Genes")
-RCPA::plotVennDE(DEResultUps) + ggplot2::ggtitle("Up-regulated DE Genes")
-RCPA::plotVennDE(DEResultDowns) + ggplot2::ggtitle("Down-regulated DE Genes")
+p1 <- RCPA::plotVennDE(DEResults) + 
+        ggplot2::ggtitle("All DE Genes")
+p2 <- RCPA::plotVennDE(DEResultUps) +
+        ggplot2::ggtitle("Up-regulated DE Genes")
+p3 <- RCPA::plotVennDE(DEResultDowns) + 
+        ggplot2::ggtitle("Down-regulated DE Genes")
 }
 
 }

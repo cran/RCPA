@@ -8,7 +8,8 @@ plotPathwayHeatmap(
   resultsList,
   yAxis = c("ID", "name"),
   negLog10pValueLims = c(0, 5),
-  useFDR = TRUE
+  useFDR = TRUE,
+  selectedPathways = NULL
 )
 }
 \arguments{
@@ -20,12 +21,15 @@ The columns are ID, name, description, p.value, pFDR, size, nDE, score and norma
 \item{negLog10pValueLims}{A vector of length 2 specifying the minimum and maximum -log10(p-value) to plot.}
 
 \item{useFDR}{Logical to indicate whether to use FDR or p-value.}
+
+\item{selectedPathways}{A vector of pathways ID, which is in the same format as ID column in the pathway analysis result, to be included in the plot.
+If it is NULL, all pathways will be included.}
 }
 \value{
 A ggplot2 object for presenting the heatmap of the pathways.
 }
 \description{
-pathways heatmap forest plot from pathway/geneset/meta analysis results.
+pathways heatmap plot from pathway/geneset/meta analysis results.
 }
 \examples{
 \donttest{
@@ -42,14 +46,16 @@ PAResults <- list(
     "Meta-analysis" = metaPAResult
 )
 
-selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", "path:hsa05016",
-                      "path:hsa05017", "path:hsa05020", "path:hsa05022", "path:hsa04724",
-                      "path:hsa04727", "path:hsa04725", "path:hsa04728", "path:hsa04726",
-                      "path:hsa04720", "path:hsa04730", "path:hsa04723", "path:hsa04721",
-                      "path:hsa04722")
+selectedPathways <- c("path:hsa05010", "path:hsa05012", "path:hsa05014", 
+                      "path:hsa05016", "path:hsa05017", "path:hsa05020", 
+                      "path:hsa05022", "path:hsa04724", "path:hsa04727", 
+                      "path:hsa04725", "path:hsa04728", "path:hsa04726", 
+                      "path:hsa04720", "path:hsa04730", "path:hsa04723", 
+                      "path:hsa04721", "path:hsa04722")
+                      
 resultsToPlot <- lapply(PAResults, function(df) df[df$ID \%in\% selectedPathways,])
 
-RCPA::plotPathwayHeatmap(resultsToPlot, yAxis = "name")
+plotObj <- RCPA::plotPathwayHeatmap(resultsToPlot, yAxis = "name")
 
 }
 }

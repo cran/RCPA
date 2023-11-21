@@ -86,21 +86,21 @@
 #' where FROM is the probe ID and TO is the entrez gene ID.
 #' @return A SummarizedExperiment object with DE analysis results appended to the rowData slot with the following columns:
 #' \itemize{
-#' \item{ID}{gene ID. If annotation is provided, this will be the entrez gene ID. Otherwise, it will be the probe ID.}
-#' \item{logFC}{log2 fold change}
-#' \item{p.value}{p-value from the DE analysis using the specified method}
-#' \item{pFDR}{p-value adjusted for multiple testing using Benjamini-Hochberg method}
-#' \item{statistic}{statistic from the DE analysis using the specified method.
+#' \item{ID: gene ID. If annotation is provided, this will be the entrez gene ID. Otherwise, it will be the probe ID.}
+#' \item{logFC: log2 fold change}
+#' \item{p.value: p-value from the DE analysis using the specified method}
+#' \item{pFDR: p-value adjusted for multiple testing using Benjamini-Hochberg method}
+#' \item{statistic: statistic from the DE analysis using the specified method.
 #' For limma, this is the t-statistic.
 #' For DESeq2, this is the Wald statistic.
 #' For edgeR, this is the log fold change.}
-#' \item{avgExpr}{
+#' \item{avgExpr: 
 #' For limma, it is the average expression.
 #' For DESeq2, it is the log base mean.
 #' For edgeR, it is the log CPM.
 #' }
-#' \item{logFCSE}{standard error of the log fold change.}
-#' \item{sampleSize}{sample size used for DE analysis.}
+#' \item{logFCSE: standard error of the log fold change.}
+#' \item{sampleSize: sample size used for DE analysis.}
 #' }
 #' The assay slot will contain the input expression/count matrix,
 #' and the rownames will be mapped to the gene IDs if annotation is found in the input SummarizedExperiment object
@@ -111,53 +111,58 @@
 #' library(RCPA)
 #' library(SummarizedExperiment)
 #'
-#' #if (!require("hgu133plus2.db", quietly = TRUE)) {
-#'  #BiocManager::install("hgu133plus2.db")
-#' #}
-#' #library(hgu133plus2.db)
-#'
 #' # GSE5281
 #' affyDataset <- loadData("affyDataset")
-#' affyDesign <- model.matrix(~0 + condition + region + condition:region, data = colData(affyDataset))
+#' affyDesign <- model.matrix(~0 + condition + region + condition:region, 
+#'                              data = colData(affyDataset))
 #' colnames(affyDesign) <- make.names(colnames(affyDesign))
-#' affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=affyDesign)
+#' affyContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
+#'                                      levels=affyDesign)
 #'
 #' if (require("hgu133plus2.db", quietly = TRUE)){
-#' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", design = affyDesign,
-#'                                         contrast = affyContrast, annotation = "GPL570")
+#' affyDEExperiment <- RCPA::runDEAnalysis(affyDataset, method = "limma", 
+#'                                         design = affyDesign,
+#'                                         contrast = affyContrast, 
+#'                                         annotation = "GPL570")
 #' }
-#' # print(rowData(affyDEExperiment)) # check the DE analysis results
+#' 
+#' # check the DE analysis results
+#' 
+#' print(head(rowData(affyDEExperiment)))
 #'
 #'
 #' # GSE61196
 #' agilDataset <- loadData("agilDataset")
-#' agilDesign <- model.matrix(~0 + condition, data = colData(agilDataset))
-#' agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=agilDesign)
+#' agilDesign <- model.matrix(~0 + condition, 
+#'                             data = colData(agilDataset))
+#' agilContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
+#'                                      levels=agilDesign)
 #'
 #' # Create Probe mapping
 #' GPL4133Anno <- GEOquery::dataTable(GEOquery::getGEO("GPL4133"))@table
-#' GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, TO = as.character(GPL4133Anno$GENE),
+#' GPL4133GeneMapping <- data.frame(FROM = GPL4133Anno$SPOT_ID, 
+#'                                  TO = as.character(GPL4133Anno$GENE),
 #'                                  stringsAsFactors = FALSE)
 #' GPL4133GeneMapping <- GPL4133GeneMapping[!is.na(GPL4133GeneMapping$TO), ]
 #'
-#' agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", design = agilDesign,
-#'                                         contrast = agilContrast, annotation = GPL4133GeneMapping)
-#' # print(rowData(agilDEExperiment))
+#' agilDEExperiment <- RCPA::runDEAnalysis(agilDataset, method = "limma", 
+#'                                         design = agilDesign,
+#'                                         contrast = agilContrast, 
+#'                                         annotation = GPL4133GeneMapping)
+#' print(head(rowData(agilDEExperiment)))
 #'
 #' # GSE153873
 #' RNASeqDataset <- loadData("RNASeqDataset")
 #' RNASeqDesign <- model.matrix(~0 + condition, data = colData(RNASeqDataset))
-#' RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, levels=RNASeqDesign)
+#' RNASeqContrast <- limma::makeContrasts(conditionalzheimer-conditionnormal, 
+#'                                       levels=RNASeqDesign)
 #'
-#' # Create mapping
-#' # Install org.Hs.eg.db if not installed
-#' # if (!require("org.Hs.eg.db", quietly = TRUE)) {
-#' #     BiocManager::install("org.Hs.eg.db")
-#' # }
 #'
 #' if (require("org.Hs.eg.db", quietly = TRUE)){
-#'     ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, keys = rownames(RNASeqDataset),
-#'                                             columns = c("SYMBOL", "ENTREZID"), keytype = "SYMBOL")
+#'     ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, 
+#'                                             keys = rownames(RNASeqDataset),
+#'                                             columns = c("SYMBOL", "ENTREZID"), 
+#'                                             keytype = "SYMBOL")
 #'     colnames(ENSEMBLMapping) <- c("FROM", "TO")
 #'
 #'     RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset,
@@ -165,14 +170,16 @@
 #'                            design = RNASeqDesign,
 #'                            contrast = RNASeqContrast,
 #'                            annotation = ENSEMBLMapping)
-#'     # print(rowData(RNASeqDEExperiment))
+#'     print(head(rowData(RNASeqDEExperiment)))
 #' }
 #' }
 #' @importFrom SummarizedExperiment SummarizedExperiment rowData assay colData
 #' @importFrom dplyr %>%
+#' @importFrom tidyr drop_na
 #' @importFrom stats p.adjust
 #' @export
 runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "edgeR"), design, contrast, annotation = NULL) {
+  
     method <- match.arg(method)
 
     if (is.null(design)) {
@@ -209,6 +216,10 @@ runDEAnalysis <- function(summarizedExperiment, method = c("limma", "DESeq2", "e
 
     if (is.null(annotation) & pkgEnv$isMissingDependency){
         return(NULL)
+    }
+    
+    if (!is.null(annotation) & "data.frame" %in% class(annotation)) {
+      annotation <- annotation %>% drop_na()
     }
 
     # get expression matrix
