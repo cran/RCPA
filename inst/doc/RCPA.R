@@ -13,8 +13,18 @@ knitr::opts_chunk$set(eval = FALSE)
 #  downloadPath <- file.path(getwd(), "GSE5281")
 #  # Create the directory if it does not exist
 #  if(!dir.exists(downloadPath)) dir.create(downloadPath)
-#  # Download the dataset GSE5281 using downloadGEO() function
-#  affyDataset <- downloadGEO(GEOID = "GSE5281", platform = "GPL570", protocol = "affymetrix", destDir = downloadPath)
+#  # download the data
+#  downloadedFiles <- RCPA::downloadGEO(GEOID = "GSE5281", platform = "GPL570", protocol = "affymetrix", destDir = downloadPath)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # read the metadata file
+#  affySampleInfo <- read.csv(file.path(downloadPath, "metadata.csv"))
+#  
+#  # read the CEL files
+#  affyExprs <- RCPA::processAffymetrix(dir = downloadPath, samples = affySampleInfo$geo_accession)
+#  
+#  # create the SummarizedExperiment object
+#  affyDataset <- SummarizedExperiment::SummarizedExperiment(assays = affyExprs, colData = affySampleInfo)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  # Access to assay data
@@ -27,8 +37,18 @@ knitr::opts_chunk$set(eval = FALSE)
 #  downloadPath <- file.path(getwd(), "GSE61196")
 #  # Create the directory if it does not exist
 #  if(!dir.exists(downloadPath)) dir.create(downloadPath)
-#  # Download the dataset GSE61196 using downloadGEO() function
-#  agilDataset <- RCPA::downloadGEO(GEOID = "GSE61196", platform ="GPL4133", protocol = "agilent", destDir = downloadPath, greenOnly = FALSE)
+#  # download the data
+#  downloadedFiles <- RCPA::downloadGEO(GEOID = "GSE61196", platform = "GPL4133", protocol = "agilent", destDir = downloadPath)
+
+## ----eval=FALSE---------------------------------------------------------------
+#  # read the metadata file
+#  agilSampleInfo <- read.csv(file.path(downloadPath, "metadata.csv"))
+#  
+#  # read the TXT files
+#  agilExprs <- processAgilent(dir = downloadPath, samples = agilSampleInfo$geo_accession, greenOnly = FALSE)
+#  
+#  # create the SummarizedExperiment object
+#  agilDataset <- SummarizedExperiment::SummarizedExperiment(assays = agilExprs, colData = agilSampleInfo)
 
 ## ----eval=FALSE---------------------------------------------------------------
 #  # Access to assay data
@@ -340,14 +360,12 @@ knitr::opts_chunk$set(eval = FALSE)
 ## ----eval=FALSE---------------------------------------------------------------
 #  genesetsToPlot <- metaPAResult$ID[order(metaPAResult$pFDR)][1:30]
 #  
-#  pltObj <- RCPA::plotPathwayNetwork(
+#  pltHtml <- RCPA::plotPathwayNetwork(
 #  	PAResults,
-#  	genesets = genesets$genesets[genesetsToPlot],
-#  	labels = genesets$names[genesetsToPlot],
+#  	genesets = genesets,
+#  	selectedPathways = genesetsToPlot,
 #  	edgeThreshold = 0.75,
 #  	mode = "continuous",
 #  	statistic = "normalizedScore"
 #  	)
-#  
-#  pltObj$plot()
 

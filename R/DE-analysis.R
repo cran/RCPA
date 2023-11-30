@@ -124,11 +124,12 @@
 #'                                         design = affyDesign,
 #'                                         contrast = affyContrast, 
 #'                                         annotation = "GPL570")
-#' }
-#' 
+#'                                         
 #' # check the DE analysis results
 #' 
 #' print(head(rowData(affyDEExperiment)))
+#' }
+#' 
 #'
 #'
 #' # GSE61196
@@ -159,17 +160,17 @@
 #'
 #'
 #' if (require("org.Hs.eg.db", quietly = TRUE)){
-#'     ENSEMBLMapping <- AnnotationDbi::select(org.Hs.eg.db, 
+#'     GeneSymbolMapping <- AnnotationDbi::select(org.Hs.eg.db, 
 #'                                             keys = rownames(RNASeqDataset),
 #'                                             columns = c("SYMBOL", "ENTREZID"), 
 #'                                             keytype = "SYMBOL")
-#'     colnames(ENSEMBLMapping) <- c("FROM", "TO")
+#'     colnames(GeneSymbolMapping) <- c("FROM", "TO")
 #'
 #'     RNASeqDEExperiment <- RCPA::runDEAnalysis(RNASeqDataset,
 #'                            method = "DESeq2",
 #'                            design = RNASeqDesign,
 #'                            contrast = RNASeqContrast,
-#'                            annotation = ENSEMBLMapping)
+#'                            annotation = GeneSymbolMapping)
 #'     print(head(rowData(RNASeqDEExperiment)))
 #' }
 #' }

@@ -1,7 +1,7 @@
 Package: RCPA
 Type: Package
 Title: Consensus Pathway Analysis
-Version: 0.1.2
+Version: 0.2.1
 Authors@R: c(
     person(given = "Ha", family = "Nguyen", email = "hvn0006@auburn.edu", role = c("aut", "cre")),
     person(given = "Zeynab", family = "Maghsoudi", email = "zmaghsoudi@nevada.unr.edu", role = c("aut")),
@@ -19,18 +19,18 @@ Imports: AnnotationDbi, SummarizedExperiment, BiocManager, Biobase,
         RobustRankAggreg, methods, jsonlite, IRdisplay
 RoxygenNote: 7.2.3
 Suggests: knitr, rmarkdown, markdown, testthat (>= 3.0.0), ROntoTools,
-        RCyjs, fgsea, BrowserViz, GSA, CePa, meta, png, ggvenn, RCurl,
-        XML, S4Vectors, devtools, hgu133plus2.db, org.Hs.eg.db, oligo
+        fgsea, GSA, CePa, meta, png, ggvenn, RCurl, XML, S4Vectors,
+        hgu133plus2.db, org.Hs.eg.db, oligo
 Config/testthat/edition: 3
 Config/testthat/stop-on-test-error: false
 VignetteBuilder: knitr, rmarkdown
 BugReports: https://github.com/tinnlab/RCPA/issues
 NeedsCompilation: no
-Packaged: 2023-11-20 23:36:28 UTC; hanguyen
+Packaged: 2023-11-28 20:53:29 UTC; hanguyen
 Author: Ha Nguyen [aut, cre],
   Zeynab Maghsoudi [aut],
   Phi Hung Bya [aut],
   Tin Nguyen [fnd]
 Maintainer: Ha Nguyen <hvn0006@auburn.edu>
 Repository: CRAN
-Date/Publication: 2023-11-21 16:10:03 UTC
+Date/Publication: 2023-11-30 09:40:14 UTC

@@ -9,6 +9,7 @@
 #' 
 #' @importFrom httr POST content
 #' @importFrom dplyr %>%
+#' @importFrom rlang interrupt
 #' @export
 getEntrezAnnotation <- function(entrezIds) {
 
@@ -23,22 +24,52 @@ getEntrezAnnotation <- function(entrezIds) {
             unique() %>%
             paste0(collapse = ",")
     )
-    res <- POST(url, query = query) %>% content(as = "text")
-    xml <- XML::xmlParse(res)
-
-    xpath <- "//DocumentSummary"
-    XML::xpathApply(xml, xpath, function(xmlDoc) {
+    # res <- POST(url, query = query) %>% content(as = "text")
+    # xml <- XML::xmlParse(res)
+    xml <- try({
+      res <- POST(url, query = query) %>% content(as = "text")
+      XML::xmlParse(res)
+    }, silent = TRUE)
+    
+    if (inherits(xml, "try-error")) {
+      # df <- data.frame(matrix(ncol = 6, nrow = 0))
+      # colnames(df) <- c("ID", "Symbol", "Description", "OtherDesignations", "OtherAliases", "Chromosome")
+      # df
+      
+      warning("No internet connection or data source broken.")
+      rlang::interrupt()
+      
+    } else {
+      xpath <- "//DocumentSummary"
+      XML::xpathApply(xml, xpath, function(xmlDoc) {
         listDat <- XML::xmlToList(xmlDoc)
         data.frame(
-            ID = listDat$.attrs[["uid"]],
-            Symbol = ifelse(is.null(listDat$Name), NA, listDat$Name),
-            Description = ifelse(is.null(listDat$Description), NA, listDat$Description),
-            OtherDesignations = ifelse(is.null(listDat$OtherDesignations), NA, listDat$OtherDesignations),
-            OtherAliases = ifelse(is.null(listDat$OtherAliases), NA, listDat$OtherAliases),
-            Chromosome = ifelse(is.null(listDat$Chromosome), NA, listDat$Chromosome),
-            stringsAsFactors = FALSE
+          ID = listDat$.attrs[["uid"]],
+          Symbol = ifelse(is.null(listDat$Name), NA, listDat$Name),
+          Description = ifelse(is.null(listDat$Description), NA, listDat$Description),
+          OtherDesignations = ifelse(is.null(listDat$OtherDesignations), NA, listDat$OtherDesignations),
+          OtherAliases = ifelse(is.null(listDat$OtherAliases), NA, listDat$OtherAliases),
+          Chromosome = ifelse(is.null(listDat$Chromosome), NA, listDat$Chromosome),
+          stringsAsFactors = FALSE
         )
-    }) %>%
+      }) %>%
         do.call(what = rbind) %>%
         `rownames<-`(.$ID)
+    }
+
+    # xpath <- "//DocumentSummary"
+    # XML::xpathApply(xml, xpath, function(xmlDoc) {
+    #     listDat <- XML::xmlToList(xmlDoc)
+    #     data.frame(
+    #         ID = listDat$.attrs[["uid"]],
+    #         Symbol = ifelse(is.null(listDat$Name), NA, listDat$Name),
+    #         Description = ifelse(is.null(listDat$Description), NA, listDat$Description),
+    #         OtherDesignations = ifelse(is.null(listDat$OtherDesignations), NA, listDat$OtherDesignations),
+    #         OtherAliases = ifelse(is.null(listDat$OtherAliases), NA, listDat$OtherAliases),
+    #         Chromosome = ifelse(is.null(listDat$Chromosome), NA, listDat$Chromosome),
+    #         stringsAsFactors = FALSE
+    #     )
+    # }) %>%
+    #     do.call(what = rbind) %>%
+    #     `rownames<-`(.$ID)
 }
