@@ -1,8 +1,8 @@
-871892fde271112cca0c34f8ec15453f *DESCRIPTION
+ecd65affca1374ae609f2bf78577de75 *DESCRIPTION
 402bb3356b5ed541c2ddab917d648d8c *NAMESPACE
 c5475dd66ca5e4596db798f1295f689d *R/CePa-helper.R
 2809cc1059b9fed8f1775e21f22ccc4c *R/DE-analysis.R
-a6c0411bb8a988cad5c09b0de8419fc4 *R/GEO-download.R
+cde998b5ec819de6c1c63e9546107f93 *R/GEO-download.R
 ba03c02a348dd6fed85ae8a323ba8b5b *R/ID-mapping.R
 09048f6abc22eac960bd0b80e716d2f2 *R/SPIA-helper.R
 2e528b2d04e73657f8bf260c454de4bd *R/annotation.R
@@ -24,11 +24,11 @@ c6636d0022d455f04d0b388c7f4ed91f *R/plot-pathway-network.R
 6e3af32ff86bc59f415b8807654e75ec *R/plot-venn.R
 04520f46ea91e0903553e57d6617602f *R/plot-volcano.R
 d6e35ca89f7cbd9a19b1439fa8122b3f *R/utils.R
-1d8a0c71f36d66a57d6fe29ca274e288 *build/vignette.rds
+a0d46a51c469cbec7d39739fe9dcdca7 *build/vignette.rds
 44f28bef0cf8af25bbb03b1565c2fc41 *inst/CITATION
 4a3f0043aba8977003a5baaf6062d3e6 *inst/doc/RCPA.R
 c1cfd10a166879415bb3329afb9a054b *inst/doc/RCPA.Rmd
-dec01637d3614fe640708cab5bf18f7c *inst/doc/RCPA.html
+46a0a15a5fc34d7c673e35495bf1f88d *inst/doc/RCPA.html
 1d53cd19a45e9e875df1ef07d3ee951d *inst/extdata/cytoscape_template.html
 7e55735974528796acdaaa8eb316c5de *inst/extdata/pieStyle.js
 426cad5479bedc3417bbb3b5dddfe132 *man/downloadGEO.Rd
