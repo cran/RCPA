@@ -1,4 +1,4 @@
-ecd65affca1374ae609f2bf78577de75 *DESCRIPTION
+1da2ad66498b5903a2105368fdbad14b *DESCRIPTION
 402bb3356b5ed541c2ddab917d648d8c *NAMESPACE
 c5475dd66ca5e4596db798f1295f689d *R/CePa-helper.R
 2809cc1059b9fed8f1775e21f22ccc4c *R/DE-analysis.R
@@ -24,11 +24,11 @@ c6636d0022d455f04d0b388c7f4ed91f *R/plot-pathway-network.R
 6e3af32ff86bc59f415b8807654e75ec *R/plot-venn.R
 04520f46ea91e0903553e57d6617602f *R/plot-volcano.R
 d6e35ca89f7cbd9a19b1439fa8122b3f *R/utils.R
-a0d46a51c469cbec7d39739fe9dcdca7 *build/vignette.rds
+7aec5ff25d28b67326143703a2ec9421 *build/vignette.rds
 44f28bef0cf8af25bbb03b1565c2fc41 *inst/CITATION
-4a3f0043aba8977003a5baaf6062d3e6 *inst/doc/RCPA.R
+6737fade8068e20a52a68692c02040b3 *inst/doc/RCPA.R
 c1cfd10a166879415bb3329afb9a054b *inst/doc/RCPA.Rmd
-46a0a15a5fc34d7c673e35495bf1f88d *inst/doc/RCPA.html
+5ac7cc8e006325ffda5e2c8689203f84 *inst/doc/RCPA.html
 1d53cd19a45e9e875df1ef07d3ee951d *inst/extdata/cytoscape_template.html
 7e55735974528796acdaaa8eb316c5de *inst/extdata/pieStyle.js
 426cad5479bedc3417bbb3b5dddfe132 *man/downloadGEO.Rd
